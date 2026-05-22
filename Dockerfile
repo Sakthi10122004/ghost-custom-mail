@@ -5,9 +5,13 @@ FROM ghost:6-alpine
 ENV NODE_ENV=development
 ENV url=http://localhost:2368
 
-# 3. Inject your custom email management dashboard files directly into the base layers
+# 3. Inject into the 6.41.0 folder layers
 COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.41.0/core/server/web/admin/app.js
 COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versions/6.41.0/core/server/web/admin/controller.js
 
-# 4. Open up the default network port
+# 4. Inject into the 6.39.0 folder layers as well (Bypasses entrypoint hardcoding)
+COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/app.js
+COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/controller.js
+
+# 5. Open up the default network port
 EXPOSE 2368
