@@ -22,7 +22,7 @@ COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versio
 USER root
 
 # 5. Install mariadb and initialize system database structures
-RUN apk update && apk add --no-cache mariadb mariadb-client openrc \
+RUN apk update && apk add --no-cache mariadb mariadb-client openrc su-exec \
     && mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
 # 6. Copy the entrypoint automation startup script
