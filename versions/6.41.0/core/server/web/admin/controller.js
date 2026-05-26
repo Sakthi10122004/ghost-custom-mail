@@ -19,10 +19,15 @@ module.exports = function adminController(req, res) {
         const smtpScript = `
 <script>
 (function () {
-    document.body.style.overflowY = 'auto';
     const style = document.createElement('style');
     style.innerHTML = \`
-        html, body, main, .gh-flow, .gh-flow-content, .gh-signin, .gh-setup, .gh-canvas {
+        body.custom-mail-config-active,
+        body.custom-mail-config-active main,
+        body.custom-mail-config-active .gh-flow,
+        body.custom-mail-config-active .gh-flow-content,
+        body.custom-mail-config-active .gh-signin,
+        body.custom-mail-config-active .gh-setup,
+        body.custom-mail-config-active .gh-canvas {
             overflow-y: auto !important; height: auto !important; max-height: none !important;
         }
         #smtp-custom-panel { 
@@ -124,6 +129,9 @@ module.exports = function adminController(req, res) {
         const isSettingsPage = hash.includes('/settings');
 
         if (!isSetupPage && !isSettingsPage) {
+            document.body.classList.remove('custom-mail-config-active');
+            document.body.style.overflowY = '';
+            
             const legacyPanel = document.getElementById('smtp-custom-panel');
             if (legacyPanel) legacyPanel.remove();
             
@@ -138,6 +146,10 @@ module.exports = function adminController(req, res) {
             
             cachedMailConfig = null;
             return;
+        }
+
+        if (isSetupPage || isSettingsPage) {
+            document.body.classList.add('custom-mail-config-active');
         }
 
         // --- SETUP PAGE HANDLER ---
