@@ -24,8 +24,10 @@ echo "Configuring users and schemas..."
 mysql --socket=/run/mysqld/mysqld.sock -e "CREATE DATABASE IF NOT EXISTS ghost_internal;"
 mysql --socket=/run/mysqld/mysqld.sock -e "CREATE USER IF NOT EXISTS 'ghost'@'127.0.0.1' IDENTIFIED BY 'root';"
 mysql --socket=/run/mysqld/mysqld.sock -e "GRANT ALL PRIVILEGES ON ghost_internal.* TO 'ghost'@'127.0.0.1';"
-mysql --socket=/run/mysqld/mysqld.sock -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';"
 mysql --socket=/run/mysqld/mysqld.sock -e "FLUSH PRIVILEGES;"
+
+# Change the root password LAST so it doesn't lock us out of the commands above
+mysql --socket=/run/mysqld/mysqld.sock -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';" || echo "Root password already set."
 
 # 6. Ensure Ghost log/content directories exist with correct node permissions
 mkdir -p /var/lib/ghost/content/logs
