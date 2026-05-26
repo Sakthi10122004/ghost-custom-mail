@@ -18,21 +18,20 @@ COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versio
 COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/app.js
 COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/controller.js
 
-# ... (Keep your top setup layers exactly the same) ...
-
-# Switch to root to configure system layers
+# 4. Switch to root to configure system layers
 USER root
 
-# Install mariadb and initialize data directories
+# 5. Install mariadb and initialize system database structures
 RUN apk update && apk add --no-cache mariadb mariadb-client openrc \
     && mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
-# Copy the entrypoint automation startup script
+# 6. Copy the entrypoint automation startup script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# PERMANENT FIX: Re-own files ONCE during the image BUILD phase
-RUN mkdir -p /var/lib/ghost/content/logs \
+# 7. PERMANENT FIX: Create missing directory runtime schemas AND re-own 
+# the 82,385 files over to the respective execution users during the BUILD phase
+RUN mkdir -p /var/lib/ghost/content/logs /run/mysqld \
     && chown -R node:node /var/lib/ghost \
     && chown -R mysql:mysql /var/lib/mysql /run/mysqld
 
