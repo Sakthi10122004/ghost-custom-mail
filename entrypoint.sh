@@ -5,24 +5,42 @@ mkdir -p /run/mysqld
 chown -R mysql:mysql /run/mysqld
 chown -R mysql:mysql /var/lib/mysql
 
-# 2. Start the MariaDB/MySQL daemon in the background
+# 2. Check if database is initialized. If not, initialize it.
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo "First time database setup. Initializing data directory..."
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
+fi
+
+# 3. Start the MariaDB daemon in the background explicitly listening on localhost
 echo "Starting internal MariaDB server..."
-mysqld_safe --datadir='/var/lib/mysql' --user=mysql &
+mysqld_safe --datadir='/var/lib/mysql' --user=mysql --bind-address=127.0.0.1 &
 
-# 3. Wait a few seconds for the database engine to finish booting up safely
-sleep 5
+# 4. Wait for MariaDB to fully wake up and open its port
+echo "Waiting for MariaDB to start..."
+for i in {1..10}; do
+    if mysqladmin ping --silent; then
+        break
+    fi
+    sleep 1
+done
 
-# 4. Initialize the custom database schema bypassing TLS/SSL checks (--ssl=0)
-echo "Initializing Ghost application schemas..."
-mysql --ssl=0 -e "CREATE DATABASE IF NOT EXISTS ghost_internal;"
-mysql --ssl=0 -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';"
-mysql --ssl=0 -e "CREATE USER IF NOT EXISTS 'ghost'@'127.0.0.1' IDENTIFIED BY 'root';"
-mysql --ssl=0 -e "GRANT ALL PRIVILEGES ON ghost_internal.* TO 'ghost'@'127.0.0.1';"
-mysql --ssl=0 -e "FLUSH PRIVILEGES;"
+# 5. Safe Schema Initialization
+echo "Configuring users and schemas..."
+# Create database if it doesn't exist
+mysql -e "CREATE DATABASE IF NOT EXISTS ghost_internal;"
 
-# 5. Shift permissions back to the standard node user context for safety
+# Create the 'ghost' user with password 'root' safely
+mysql -e "CREATE USER IF NOT EXISTS 'ghost'@'127.0.0.1' IDENTIFIED BY 'root';"
+mysql -e "GRANT ALL PRIVILEGES ON ghost_internal.* TO 'ghost'@'127.0.0.1';"
+mysql -e "FLUSH PRIVILEGES;"
+
+# Set root password securely only if it hasn't been changed yet
+mysqladmin -u root password 'root' 2>/dev/null || echo "Root password already configured."
+
+# 6. Ensure Ghost log/content directories exist with correct node permissions
+mkdir -p /var/lib/ghost/content/logs
 chown -R node:node /var/lib/ghost
 
-# 6. Hands off execution back to the standard Ghost bootloader processes
+# 7. Shift execution to Ghost
 echo "Booting Ghost Web Application Layer..."
 exec node /var/lib/ghost/current/index.js
