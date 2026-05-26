@@ -21,8 +21,11 @@ module.exports = function adminController(req, res) {
 (function () {
     const style = document.createElement('style');
     style.innerHTML = \`
+        html.custom-mail-config-active,
         body.custom-mail-config-active,
         body.custom-mail-config-active main,
+        body.custom-mail-config-active .gh-app,
+        body.custom-mail-config-active .gh-main,
         body.custom-mail-config-active .gh-flow,
         body.custom-mail-config-active .gh-flow-content,
         body.custom-mail-config-active .gh-signin,
@@ -129,6 +132,7 @@ module.exports = function adminController(req, res) {
         const isSettingsPage = hash.includes('/settings');
 
         if (!isSetupPage && !isSettingsPage) {
+            document.documentElement.classList.remove('custom-mail-config-active');
             document.body.classList.remove('custom-mail-config-active');
             document.body.style.overflowY = '';
             
@@ -149,6 +153,7 @@ module.exports = function adminController(req, res) {
         }
 
         if (isSetupPage || isSettingsPage) {
+            document.documentElement.classList.add('custom-mail-config-active');
             document.body.classList.add('custom-mail-config-active');
         }
 

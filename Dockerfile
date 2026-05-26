@@ -29,6 +29,7 @@ RUN chmod +x /entrypoint.sh
 # 7. PERMANENT FIX: Create missing directory runtime schemas AND re-own 
 # the 82,385 files over to the respective execution users during the BUILD phase
 RUN mkdir -p /var/lib/ghost/content/logs /run/mysqld \
+    && rm -f /var/lib/ghost/config.development.json \
     && chown -R node:node /var/lib/ghost \
     && chown -R mysql:mysql /var/lib/mysql /run/mysqld
 

@@ -4,6 +4,12 @@
 mkdir -p /run/mysqld /var/lib/ghost/content/logs
 chown -R mysql:mysql /run/mysqld
 
+if [ ! -d "/var/lib/ghost/content/themes" ]; then
+    echo "Populating empty content directory..."
+    cp -Rn /var/lib/ghost/content.orig/* /var/lib/ghost/content/
+    chown -R node:node /var/lib/ghost/content
+fi
+
 # 2. Start the MariaDB daemon in the background
 mariadbd-safe --datadir='/var/lib/mysql' --user=mysql --bind-address=127.0.0.1 --skip-networking=0 &
 
