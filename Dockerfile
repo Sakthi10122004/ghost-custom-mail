@@ -18,18 +18,24 @@ COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versio
 COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/app.js
 COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/controller.js
 
-# 4. Switch to root to install MariaDB packages
+# ... (Keep your top setup layers exactly the same) ...
+
+# Switch to root to configure system layers
 USER root
 
-# Install mariadb, mariadb-client, and openrc (required to manage services on Alpine)
+# Install mariadb and initialize data directories
 RUN apk update && apk add --no-cache mariadb mariadb-client openrc \
     && mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
-# 5. Copy the entrypoint automation startup script
+# Copy the entrypoint automation startup script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# PERMANENT FIX: Re-own files ONCE during the image BUILD phase
+RUN mkdir -p /var/lib/ghost/content/logs \
+    && chown -R node:node /var/lib/ghost \
+    && chown -R mysql:mysql /var/lib/mysql /run/mysqld
+
 EXPOSE 2368
 
-# Run our custom entrypoint script on boot
 ENTRYPOINT ["/entrypoint.sh"]
