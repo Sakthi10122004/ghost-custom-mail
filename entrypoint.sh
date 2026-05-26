@@ -15,27 +15,17 @@ fi
 echo "Starting internal MariaDB server..."
 mysqld_safe --datadir='/var/lib/mysql' --user=mysql --bind-address=127.0.0.1 &
 
-# 4. Wait for MariaDB to fully wake up and open its port
-echo "Waiting for MariaDB to start..."
-for i in {1..10}; do
-    if mysqladmin ping --silent; then
-        break
-    fi
-    sleep 1
-done
+# 4. Give MariaDB an explicit window to fully wake up and create its socket file
+echo "Waiting 8 seconds for MariaDB engine to stabilize..."
+sleep 8
 
-# 5. Safe Schema Initialization
+# 5. Safe Schema Initialization using explicit socket connection paths
 echo "Configuring users and schemas..."
-# Create database if it doesn't exist
-mysql -e "CREATE DATABASE IF NOT EXISTS ghost_internal;"
-
-# Create the 'ghost' user with password 'root' safely
-mysql -e "CREATE USER IF NOT EXISTS 'ghost'@'127.0.0.1' IDENTIFIED BY 'root';"
-mysql -e "GRANT ALL PRIVILEGES ON ghost_internal.* TO 'ghost'@'127.0.0.1';"
-mysql -e "FLUSH PRIVILEGES;"
-
-# Set root password securely only if it hasn't been changed yet
-mysqladmin -u root password 'root' 2>/dev/null || echo "Root password already configured."
+mysql --socket=/run/mysqld/mysqld.sock -e "CREATE DATABASE IF NOT EXISTS ghost_internal;"
+mysql --socket=/run/mysqld/mysqld.sock -e "CREATE USER IF NOT EXISTS 'ghost'@'127.0.0.1' IDENTIFIED BY 'root';"
+mysql --socket=/run/mysqld/mysqld.sock -e "GRANT ALL PRIVILEGES ON ghost_internal.* TO 'ghost'@'127.0.0.1';"
+mysql --socket=/run/mysqld/mysqld.sock -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';"
+mysql --socket=/run/mysqld/mysqld.sock -e "FLUSH PRIVILEGES;"
 
 # 6. Ensure Ghost log/content directories exist with correct node permissions
 mkdir -p /var/lib/ghost/content/logs
