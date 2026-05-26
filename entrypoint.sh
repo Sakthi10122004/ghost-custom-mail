@@ -5,8 +5,7 @@ mkdir -p /run/mysqld /var/lib/ghost/content/logs
 chown -R mysql:mysql /run/mysqld
 
 # 2. Start the MariaDB daemon in the background
-echo "Starting internal MariaDB server..."
-mysqld_safe --datadir='/var/lib/mysql' --user=mysql --bind-address=127.0.0.1 &
+mariadbd-safe --datadir='/var/lib/mysql' --user=mysql --bind-address=127.0.0.1 --skip-networking=0 &
 
 # 3. Give MariaDB a stable window to create its socket file
 echo "Waiting 8 seconds for MariaDB engine to stabilize..."
