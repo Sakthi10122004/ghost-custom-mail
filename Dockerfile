@@ -3,12 +3,9 @@ FROM ghost:6-alpine
 
 # 2. Set environment settings with your exact credentials
 ENV NODE_ENV=production
-ENV url=http://localhost:2368
-ENV database__client=mysql
-ENV database__connection__host=127.0.0.1
-ENV database__connection__user=ghost
-ENV database__connection__password=root
-ENV database__connection__database=ghost_internal
+
+# Copy our physical config file that contains the database details
+COPY config.production.json /var/lib/ghost/config.production.json
 
 # 3. Inject your custom email management dashboard files
 COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.41.0/core/server/web/admin/app.js
