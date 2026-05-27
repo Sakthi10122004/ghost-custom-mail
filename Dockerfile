@@ -7,13 +7,9 @@ ENV NODE_ENV=production
 # Copy our physical config file that contains the database details
 COPY config.production.json /var/lib/ghost/config.production.json
 
-# 3. Inject your custom email management dashboard files
-COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.41.0/core/server/web/admin/app.js
-COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versions/6.41.0/core/server/web/admin/controller.js
-
-# Also duplicate to 6.39.0 to handle entrypoint fallbacks safely
-COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/app.js
-COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/versions/6.39.0/core/server/web/admin/controller.js
+# 4. Inject our custom admin routing to handle mail settings
+COPY ./versions/6.41.0/core/server/web/admin/app.js /var/lib/ghost/current/core/server/web/admin/app.js
+COPY ./versions/6.41.0/core/server/web/admin/controller.js /var/lib/ghost/current/core/server/web/admin/controller.js
 
 # 4. Switch to root to configure system layers
 USER root
